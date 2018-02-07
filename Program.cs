@@ -55,7 +55,14 @@ namespace Maclar
 
 
                     string[] icler = parca.Split(new[] { "</td>" }, StringSplitOptions.RemoveEmptyEntries);
+  string tip="";
+                    if (icler[1].ToString().IndexOf("99999.gif") > -1)
+                    {
+                        tip = "DUELLO";
+                    }
+                    if (parca.ToString().IndexOf("AU1") < 0 ) { tip = "EKSIK"; }
 
+                    
                     //
                     //<td class="t1bvr"><a href="/teamInfo/32859/"><strong>Oxford United</strong></a></td>
                     string code = vericek(icler[0].ToString(), "<b>", "</b>");
