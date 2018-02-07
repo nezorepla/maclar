@@ -8,7 +8,7 @@ using System.IO;
 using System.Data;
 using System.Globalization;
 
-namespace Maclar
+namespace Iddaa
 {
     class Program
     {
@@ -36,90 +36,118 @@ namespace Maclar
             wc.Encoding = Encoding.UTF8;
             long tick = DateTime.Now.Ticks;
 
-            string source = wc.DownloadString("aspx?w=18008&sb=6&sd=1&d=-1&ms=3&i=0&tm=&l=-1&p=0&ps=11&ptype=1&cba=0&spt=1&?_=" + tick.ToString());
+            StreamWriter sw = new StreamWriter(@"C:\SourceCodes\m1.txt", false);
 
+            int hafta = 18008;
 
-            source = vericek(source, "<table", "</table>");
-            // source = source.Replace('|',' ').Replace("</tr>", "|").ToString();
-            string[] ayir = source.Split(new[] { "</tr>" }, StringSplitOptions.RemoveEmptyEntries);
+            sw.WriteLine("hafta|macId|tip|code|homeId|home|awayId|away|IY|MS|MS1|MS1_Y|MSX|MSX_Y|MS2|MS2_Y|AU1|AU1_Y|AU2|AU2_Y|KG1|KG1_Y|KG0|KG0_Y|TKS|TKS_Y");
 
-            int i = 1;
-            StreamWriter sw = new StreamWriter(@"C:\Users\A\Desktop\kapakingen\m1.txt", false);
-
-
-            foreach (string parca in ayir)
+            for (int x = 0; x <= 2; x++)
             {
-                string son = "";
-                try
+                hafta = hafta - x;
+                string source = wc.DownloadString("https://user.mackolik.com/userpages/CouponStats/CouponStatisticsHandler.aspx?w=" + hafta.ToString() + "&sb=6&sd=1&d=-1&ms=3&i=0&tm=&l=-1&p=0&ps=2002&ptype=1&cba=0&spt=1&?_=" + tick.ToString());
+
+
+                source = vericek(source, "<table", "</table>");
+                // source = source.Replace('|',' ').Replace("</tr>", "|").ToString();
+                string[] ayir = source.Split(new[] { "</tr>" }, StringSplitOptions.RemoveEmptyEntries);
+
+                foreach (string parca in ayir)
                 {
-
-
-                    string[] icler = parca.Split(new[] { "</td>" }, StringSplitOptions.RemoveEmptyEntries);
-  string tip="";
-                    if (icler[1].ToString().IndexOf("99999.gif") > -1)
+                    string son = "";
+                    try
                     {
-                        tip = "DUELLO";
+
+
+                        string[] icler = parca.Split(new[] { "</td>" }, StringSplitOptions.RemoveEmptyEntries);
+                        string tip = "";
+                        if (icler[1].ToString().IndexOf("99999.gif") > -1)
+                        {
+                            tip = "DUELLO";
+                        }
+                        else { tip = "NORMAL"; }
+                        //      if (parca.ToString().IndexOf("AU1") < 0 ) { tip = "EKSIK"; }
+
+
+
+                        //hafta|macId|tip|code|homeId|home|awayId|away|IY|MS|MS1|MS1_Y|MSX|MSX_Y|MS2|MS2_Y|AU1|AU1_Y|AU2|AU2_Y|KG1|KG1_Y|KG0|KG0_Y|TKS|TKS_Y
+                        string code = vericek(icler[0].ToString(), "<b>", "</b>");
+                        string home = rep_home(icler[1].ToString());
+                        string away = rep_away(icler[1].ToString());
+                        string macId = rep_mid(icler[1].ToString());
+
+                        string iy_skor = rep_skor(icler[2].ToString());
+                        string ms_skor = rep_skor(icler[3].ToString());
+                        string ms1_oran = rep_oran("MS1", icler[4].ToString());
+                        string msx_oran = rep_oran("MSX", icler[5].ToString());
+                        string ms2_oran = rep_oran("MS2", icler[6].ToString());
+                        string AU1_oran = rep_oran("AU1", icler[7].ToString());
+                        string AU2_oran = rep_oran("AU2", icler[8].ToString());
+                        string KG1_oran = rep_oran("KG1", icler[9].ToString());
+                        string KG0_oran = rep_oran("KG0", icler[10].ToString());
+                        string TOPLAM_oran = rep_SON(icler[11].ToString());
+                        string MK_oran = rep_SON(icler[12].ToString());
+                        // Match away =  icler[2].ToString() 
+
+                        son = hafta.ToString() + "|" + macId.ToString() + "|'" + tip + "'|" + code.ToString() + "|"
+                            + home.ToString() + "'|"
+                            + away.ToString() + "'|'"
+                            + iy_skor.ToString() + "'|'"
+                            + ms_skor.ToString() + "'|'"
+                            + ms1_oran.ToString() + "'|'"
+                            + msx_oran.ToString() + "'|'"
+                            + ms2_oran.ToString() + "'|'"
+                            + AU1_oran.ToString() + "'|'"
+                            + AU2_oran.ToString() + "'|'"
+                            + KG1_oran.ToString() + "'|'"
+                            + KG0_oran.ToString() + "'|'"
+                            + TOPLAM_oran.ToString() + "'|'"
+                            + MK_oran.ToString() + "'";
+                        son = son.Replace("  ", " ");
+                        son = son.Replace("  ", "','");
+                        son = son.Replace("_ _", "','");
+
+
+                        if (IsNumeric(code))
+                            sw.WriteLine(son);
+
                     }
-                    if (parca.ToString().IndexOf("AU1") < 0 ) { tip = "EKSIK"; }
-
-                    
-                    //
-                    //<td class="t1bvr"><a href="/teamInfo/32859/"><strong>Oxford United</strong></a></td>
-                    string code = vericek(icler[0].ToString(), "<b>", "</b>");
-                    string code2 = "code:" + code;
-                    string home = "home:" + rep_home(icler[1].ToString());
-                    string away = "away:" + rep_away(icler[1].ToString());
-                    string iy_skor = "iy_skor:" + rep_skor(icler[2].ToString());
-                    string ms_skor = "ms_skor:" + rep_skor(icler[3].ToString());
-                    string ms1_oran = "ms1_oran:" + rep_oran("MS1", icler[4].ToString());
-                    string msx_oran = "msx_oran:" + rep_oran("MSX", icler[5].ToString());
-                    string ms2_oran = "ms2_oran:" + rep_oran("MS2", icler[6].ToString());
-                    string AU1_oran = "AU1_oran:" + rep_oran("AU1", icler[7].ToString());
-                    string AU2_oran = "AU2_oran:" + rep_oran("AU2", icler[8].ToString());
-                    string KG1_oran = "KG1_oran:" + rep_oran("KG1", icler[9].ToString());
-                    string KG0_oran = "KG0_oran:" + rep_oran("KG0", icler[10].ToString());
-                    string TOPLAM_oran = "TOPLAM_oran:" + rep_SON(icler[11].ToString());
-                    string MK_oran = "MK_oran:" + rep_SON(icler[12].ToString());
-                    // Match away =  icler[2].ToString() 
-
-                    son = "'" + code.ToString() + "|"
-                        + home.ToString() + "|"
-                        + away.ToString() + "|"
-                        + iy_skor.ToString() + "|"
-                        + ms_skor.ToString() + "|"
-                        + ms1_oran.ToString() + "|"
-                        + msx_oran.ToString() + "|"
-                        + ms2_oran.ToString() + "|"
-                        + AU1_oran.ToString() + "|"
-                        + AU2_oran.ToString() + "|"
-                        + KG1_oran.ToString() + "|"
-                        + KG0_oran.ToString() + "|"
-                        + TOPLAM_oran.ToString() + "|"
-                        + MK_oran.ToString() + "'";
-                    son = son.Replace("  ", " ");
-                    son = son.Replace("  ", "','");
-                    son = son.Replace("_ _", "','");
-
-
-                    if (IsNumeric(code))
-                        sw.WriteLine(son);
+                    catch
+                    {
+                        //  sw.WriteLine("hata");
+                    }
+                    //if (son.Replace(Environment.NewLine, "").Length > 2)
+                    //    insert(son.Replace(Environment.NewLine, ""));
 
                 }
-                catch
-                {
-                    sw.WriteLine("hata");
-                }
-                //if (son.Replace(Environment.NewLine, "").Length > 2)
-                //    insert(son.Replace(Environment.NewLine, ""));
+                sw.Close();
+
 
             }
-            sw.Close();
-
-
 
         }
 
+        public static string rep_mid(string data)
+        {
+            try
+            {
+                // iddaa-rows-style' href='javascript:popTeam(
 
+                data = vericek(data, "javascript:popMatch(", ",");
+
+
+                return data;
+
+
+
+
+            }
+            catch
+            {
+                return "";
+            }
+
+        }
         public static Boolean IsNumeric(String s)
         {
             float f;
@@ -133,7 +161,7 @@ namespace Maclar
 
         public static void insert(string p)
         {
-            StreamWriter sw = new StreamWriter(@"C:\Users\A25318\Desktop\kapakingen\m1.txt", false);
+            StreamWriter sw = new StreamWriter(@"C:\Users\\Desktop\kapakingen\m1.txt", false);
 
 
             sw.WriteLine(p);
@@ -147,7 +175,7 @@ namespace Maclar
                 // iddaa-rows-style' href='javascript:popTeam(
 
                 data = vericek(data, "iddaa-rows-style' href='javascript:popTeam(", "</span");
-                data = data.Replace(")'>", "|");
+                data = data.Replace(")'>", "|'");
                 data = data.Replace("<span class='cc-hand'>", "");
 
                 return data;
@@ -170,7 +198,7 @@ namespace Maclar
                 string data2 = vericek(data, "%", "<");
 
 
-                return data1 + "|" + data2;
+                return data1 + "'|'" + data2;
 
 
             }
@@ -226,6 +254,8 @@ namespace Maclar
             }
 
         }
+
+
         public static string rep_away(string data)
         {
             try
@@ -236,7 +266,7 @@ namespace Maclar
 
 
                 data = data.Replace("<a class='iddaa-rows-style' href='javascript:popTeam(", "");
-                data = data.Replace(")'>", "|");
+                data = data.Replace(")'>", "|'");
                 data = data.Replace("<span class='cc-hand'>", "");
                 return data;
 
@@ -377,6 +407,7 @@ namespace Maclar
             }
         }
 
+
+        public static int i { get; set; }
     }
 }
-    
