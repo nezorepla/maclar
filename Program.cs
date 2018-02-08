@@ -8,7 +8,7 @@ using System.IO;
 using System.Data;
 using System.Globalization;
 
-namespace Iddaa
+namespace Maclar
 {
     class Program
     {
@@ -36,17 +36,17 @@ namespace Iddaa
             wc.Encoding = Encoding.UTF8;
             long tick = DateTime.Now.Ticks;
 
-            StreamWriter sw = new StreamWriter(@"C:\SourceCodes\m1.txt", false);
+            StreamWriter sw = new StreamWriter(@"C:\Users\A25318\Desktop\kapakingen\m2.txt", false);
 
             int hafta = 18008;
 
             sw.WriteLine("hafta|macId|tip|code|homeId|home|awayId|away|IY|MS|MS1|MS1_Y|MSX|MSX_Y|MS2|MS2_Y|AU1|AU1_Y|AU2|AU2_Y|KG1|KG1_Y|KG0|KG0_Y|TKS|TKS_Y");
 
-            for (int x = 0; x <= 2; x++)
+            for (int x = 0; x <= 10; x++)
             {
                 hafta = hafta - x;
                 string source = wc.DownloadString("https://user.mackolik.com/userpages/CouponStats/CouponStatisticsHandler.aspx?w=" + hafta.ToString() + "&sb=6&sd=1&d=-1&ms=3&i=0&tm=&l=-1&p=0&ps=2002&ptype=1&cba=0&spt=1&?_=" + tick.ToString());
-
+                System.Threading.Thread.Sleep(10000);
 
                 source = vericek(source, "<table", "</table>");
                 // source = source.Replace('|',' ').Replace("</tr>", "|").ToString();
@@ -73,8 +73,8 @@ namespace Iddaa
                         //hafta|macId|tip|code|homeId|home|awayId|away|IY|MS|MS1|MS1_Y|MSX|MSX_Y|MS2|MS2_Y|AU1|AU1_Y|AU2|AU2_Y|KG1|KG1_Y|KG0|KG0_Y|TKS|TKS_Y
                         string code = vericek(icler[0].ToString(), "<b>", "</b>");
                         string home = rep_home(icler[1].ToString());
-                        string away = rep_away(icler[1].ToString());
-                        string macId = rep_mid(icler[1].ToString());
+                        string away = rep_away(tip, icler[1].ToString());
+                        string macId = rep_mid(tip, icler[1].ToString());
 
                         string iy_skor = rep_skor(icler[2].ToString());
                         string ms_skor = rep_skor(icler[3].ToString());
@@ -104,8 +104,10 @@ namespace Iddaa
                             + TOPLAM_oran.ToString() + "'|'"
                             + MK_oran.ToString() + "'";
                         son = son.Replace("  ", " ");
-                        son = son.Replace("  ", "','");
-                        son = son.Replace("_ _", "','");
+                        son = son.Replace(" |", "|");
+                        son = son.Replace("' ", "'");
+
+
 
 
                         if (IsNumeric(code))
@@ -120,21 +122,25 @@ namespace Iddaa
                     //    insert(son.Replace(Environment.NewLine, ""));
 
                 }
-                sw.Close();
+
 
 
             }
-
+            sw.Close();
         }
 
-        public static string rep_mid(string data)
+        public static string rep_mid(string tip, string data)
         {
             try
             {
-                // iddaa-rows-style' href='javascript:popTeam(
-
-                data = vericek(data, "javascript:popMatch(", ",");
-
+                if (tip == "DUELLO")
+                {
+                    data = vericek(data, "javascript:popDuelloDialog(", ",");
+                }
+                else
+                {
+                    data = vericek(data, "javascript:popMatch(", ",");
+                }
 
                 return data;
 
@@ -186,7 +192,16 @@ namespace Iddaa
             }
 
         }
+        public static Boolean IsNull(String t)
+        {
+            bool rv;
 
+            if (t == null)
+            { rv = true; }
+            else { rv = false; }
+
+            return rv;
+        }
         public static string rep_oran(string tip, string data)
         {
             try
@@ -194,6 +209,14 @@ namespace Iddaa
 
                 string data1 = vericek(data, tip + "\">", "<");
                 data1 = data1.Replace(Environment.NewLine, "");
+
+
+                data1 = data1.Replace(" ", "");
+
+
+                if (IsNull(data1) || data1.Length<2) { data1 = "-"; }
+
+
 
                 string data2 = vericek(data, "%", "<");
 
@@ -256,14 +279,21 @@ namespace Iddaa
         }
 
 
-        public static string rep_away(string data)
+        public static string rep_away(string tip, string data)
         {
             try
             {
                 // iddaa-rows-style' href='javascript:popTeam(
 
-                data = vericek(data, "- </a>", "</span");
 
+                if (tip == "DUELLO")
+                {
+                    data = vericek(data, "gif\"></a>", "<span");
+                }
+                else
+                {
+                    data = vericek(data, "- </a>", "</span");
+                }
 
                 data = data.Replace("<a class='iddaa-rows-style' href='javascript:popTeam(", "");
                 data = data.Replace(")'>", "|'");
@@ -406,8 +436,5 @@ namespace Iddaa
                 throw ex;
             }
         }
-
-
-        public static int i { get; set; }
     }
 }
