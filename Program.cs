@@ -36,18 +36,20 @@ namespace Maclar
             wc.Encoding = Encoding.UTF8;
             long tick = DateTime.Now.Ticks;
 
-            StreamWriter sw = new StreamWriter(@"C:\Users\A25318\Desktop\kapakingen\m2.txt", false);
+            //    
 
-            int hafta = 18008;
+            int hafta = 17103;
 
-            sw.WriteLine("hafta|macId|tip|code|homeId|home|awayId|away|IY|MS|MS1|MS1_Y|MSX|MSX_Y|MS2|MS2_Y|AU1|AU1_Y|AU2|AU2_Y|KG1|KG1_Y|KG0|KG0_Y|TKS|TKS_Y");
+            //     sw.WriteLine("hafta|macId|tip|code|homeId|home|awayId|away|IY|MS|MS1|MS1_Y|MSX|MSX_Y|MS2|MS2_Y|AU1|AU1_Y|AU2|AU2_Y|KG1|KG1_Y|KG0|KG0_Y|TKS|TKS_Y");
 
-            for (int x = 0; x <= 10; x++)
+            for (int x = 0; x <=103; x++)
             {
                 hafta = hafta - x;
-                string source = wc.DownloadString("https://user.mackolik.com/userpages/CouponStats/CouponStatisticsHandler.aspx?w=" + hafta.ToString() + "&sb=6&sd=1&d=-1&ms=3&i=0&tm=&l=-1&p=0&ps=2002&ptype=1&cba=0&spt=1&?_=" + tick.ToString());
-                System.Threading.Thread.Sleep(10000);
-
+                string source = wc.DownloadString("https://user.mackolik.com/userpages/CouponStats/CouponStatisticsHandler.aspx?w=" + hafta.ToString() + "&sb=6&sd=1&d=-1&ms=3&i=0&tm=&l=-1&p=0&ps=20000&ptype=1&cba=0&spt=1");
+                System.Threading.Thread.Sleep(30000);
+                StreamWriter sw = new StreamWriter(@"C:\SourceCodes\" + hafta.ToString() + ".txt", false);
+                sw.Write(source);
+                sw.Close();
                 source = vericek(source, "<table", "</table>");
                 // source = source.Replace('|',' ').Replace("</tr>", "|").ToString();
                 string[] ayir = source.Split(new[] { "</tr>" }, StringSplitOptions.RemoveEmptyEntries);
@@ -89,29 +91,31 @@ namespace Maclar
                         string MK_oran = rep_SON(icler[12].ToString());
                         // Match away =  icler[2].ToString() 
 
-                        son = hafta.ToString() + "|" + macId.ToString() + "|'" + tip + "'|" + code.ToString() + "|"
-                            + home.ToString() + "'|"
-                            + away.ToString() + "'|'"
-                            + iy_skor.ToString() + "'|'"
-                            + ms_skor.ToString() + "'|'"
-                            + ms1_oran.ToString() + "'|'"
-                            + msx_oran.ToString() + "'|'"
-                            + ms2_oran.ToString() + "'|'"
-                            + AU1_oran.ToString() + "'|'"
-                            + AU2_oran.ToString() + "'|'"
-                            + KG1_oran.ToString() + "'|'"
-                            + KG0_oran.ToString() + "'|'"
-                            + TOPLAM_oran.ToString() + "'|'"
-                            + MK_oran.ToString() + "'";
+                        son = hafta.ToString() + "," + macId.ToString() + ",'" + tip + "'," + code.ToString() + ","
+                            + home.ToString() + "',"
+                            + away.ToString() + "','"
+                            + iy_skor.ToString() + "','"
+                            + ms_skor.ToString() + "','"
+                            + ms1_oran.ToString() + "','"
+                            + msx_oran.ToString() + "','"
+                            + ms2_oran.ToString() + "','"
+                            + AU1_oran.ToString() + "','"
+                            + AU2_oran.ToString() + "','"
+                            + KG1_oran.ToString() + "','"
+                            + KG0_oran.ToString() + "','"
+                            + TOPLAM_oran.ToString().Replace(".", "").Replace(",", ".") + "','"
+                            + MK_oran.ToString().Replace(",", ".") + "'";
+                        son = son.Replace(" ", " ");
                         son = son.Replace("  ", " ");
-                        son = son.Replace(" |", "|");
+                        son = son.Replace(" ,", ",");
                         son = son.Replace("' ", "'");
+                        son = son.Replace(Environment.NewLine, "'");
 
 
 
 
                         if (IsNumeric(code))
-                            sw.WriteLine(son);
+                            insert(son); //sw.WriteLine(son);
 
                     }
                     catch
@@ -126,7 +130,7 @@ namespace Maclar
 
 
             }
-            sw.Close();
+            //  sw.Close();
         }
 
         public static string rep_mid(string tip, string data)
@@ -165,15 +169,29 @@ namespace Maclar
 
 
 
-        public static void insert(string p)
+
+        public static void insert(string q)
         {
-            StreamWriter sw = new StreamWriter(@"C:\Users\\Desktop\kapakingen\m1.txt", false);
+            string query = "INSERT INTO tbl_mackolik_CouponStats_1 (hafta,macId,tip,code,homeId,home,awayId,away,IY,MS,MS1,MS1_Y,MSX,MSX_Y,MS2,MS2_Y,AU1,AU1_Y,AU2,AU2_Y,KG1,KG1_Y,KG0,KG0_Y,TKS,TKS_Y) VALUES (" + q + ")";
+            SqlCommand cmd = new SqlCommand(query, baglanti);
+            /* SqlCommand cmd = new SqlCommand("INSERT INTO PD_Sites_Tmp_Betvirus (dt,hid,home,aid,away,f1,fx,f2,alt,ust) VALUES (getdate(),@a,@b,@c,@d,@o1,@o2,@o3,@o4,@o5)", baglanti);
+          cmd.Parameters.AddWithValue("@a", a);
+            cmd.Parameters.AddWithValue("@b", b);
+            cmd.Parameters.AddWithValue("@c", c);
+            cmd.Parameters.AddWithValue("@d", d);
+            cmd.Parameters.AddWithValue("@o1", o1);
+            cmd.Parameters.AddWithValue("@o2", o2);
+            cmd.Parameters.AddWithValue("@o3", o3);
+            cmd.Parameters.AddWithValue("@o4", o4);
+            cmd.Parameters.AddWithValue("@o5", o5);*/
+            if (baglanti.State == ConnectionState.Closed)
+            {
+                baglanti.Open();
+            }
 
-
-            sw.WriteLine(p);
-            sw.Close();
+            cmd.ExecuteNonQuery();
+            baglanti.Close();
         }
-
         public static string rep_home(string data)
         {
             try
@@ -181,7 +199,7 @@ namespace Maclar
                 // iddaa-rows-style' href='javascript:popTeam(
 
                 data = vericek(data, "iddaa-rows-style' href='javascript:popTeam(", "</span");
-                data = data.Replace(")'>", "|'");
+                data = data.Replace(")'>", ",'");
                 data = data.Replace("<span class='cc-hand'>", "");
 
                 return data;
@@ -214,14 +232,14 @@ namespace Maclar
                 data1 = data1.Replace(" ", "");
 
 
-                if (IsNull(data1) || data1.Length<2) { data1 = "-"; }
+                if (IsNull(data1) || data1.Length < 2) { data1 = "0"; }
 
 
 
                 string data2 = vericek(data, "%", "<");
 
 
-                return data1 + "'|'" + data2;
+                return data1.Replace(",", ".") + "','" + data2.Replace(",", ".");
 
 
             }
@@ -296,7 +314,7 @@ namespace Maclar
                 }
 
                 data = data.Replace("<a class='iddaa-rows-style' href='javascript:popTeam(", "");
-                data = data.Replace(")'>", "|'");
+                data = data.Replace(")'>", ",'");
                 data = data.Replace("<span class='cc-hand'>", "");
                 return data;
 
@@ -324,74 +342,7 @@ namespace Maclar
             }
 
         }
-        public static string rep2(string data)
-        {
-            try
-            {
-                data = data.Replace(" ", "_");
-                data = data.Replace(Environment.NewLine, "");
-                data = data.Replace(Environment.NewLine, "");
-                data = data.Replace("\n", "");
-                data = data.Replace("\t", "");
-                char tab = '\u0009';
-                data = data.Replace("<span_class=\"  \">", "");
-                data = data.Replace("<td_align=\"center\"_class=\"brdright\">", "");
-                data = data.Replace("<span_class=\"", "");
-                data = data.Replace("</span>", " ");
-                data = data.Replace("-", " ");
-                data = data.Replace("bBold", "");
-                data = data.Replace("dx", "");
-                data = data.Replace("rx", "");
-                data = data.Replace("sx", "");
-                data = data.Replace(">", " ");
-                data = data.Replace("\"", "");
 
-                data = data.Replace(tab.ToString(), "");
-
-                data = data.Replace("__", " ");
-
-
-                return data;
-            }
-            catch
-            {
-                return "";
-            }
-
-        }
-        public static string rep(string data)
-        {
-            try
-            {
-                data = data.Replace(" ", "_");
-                data = data.Replace("%", " ");
-                data = data.Replace("%", " ");
-                data = data.Replace("\n", "");
-                data = data.Replace("\t", "");
-                char tab = '\u0009';
-                data = data.Replace(tab.ToString(), "");
-
-                data = data.Replace(Environment.NewLine, "");
-                data = data.Replace("<a_href=\"/teamInfo/", " ");
-                data = data.Replace("<td_class=\"t1bvr\">", "");
-                data = data.Replace("<td_class=\"t2bvr\">", "");
-                data = data.Replace("</a>", "");
-                data = data.Replace("<strong>", "");
-                data = data.Replace("</strong>", " ");
-                data = data.Replace("/\"", "','");
-                data = data.Replace(">", " ");
-
-                data = data.Replace("__", " ");
-                // .Replace("<td class=\"t2bvr\">", "").Replace("</a>", "").Replace("<strong>", "").Replace("</strong>", "").Replace("/\">", "->");
-
-                return data;
-            }
-            catch
-            {
-                return "";
-            }
-
-        }
         public void CreateTXTFile(DataTable dt, string strFilePath)
         {
             try
