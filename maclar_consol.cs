@@ -11,7 +11,7 @@ namespace maclar_consol
     class Program
     {
        
-                      string t = "";
+         string tt = "MACID,HOME,HOMEID,AWAY,AWAYID,C1,TM,DT,MS_HA,MS_HY,KOD,IY_HA,IY_HY,MBS,HANDIKAP_H,HANDIKAP_A,MS1,MSX,MS2,CS1X,CS12,CS2X,ALT,UST,C2,C3,LIG,LIGID,LIGID2,TG01,TG23,TG46,TG7P,IY1,IYX,IY2,H1,HX,H2,KGVAR,KGYOK,C4,IY15ALT,IY15UST,MS15ALT,MS15UST,MS35ALT,MS35UST,C5,C6";
             string h = getCurrentWeek();
             string g = DateTime.Now.ToString("dd.MM.yyyy");
 
@@ -33,7 +33,7 @@ namespace maclar_consol
                 {
                     string nwk = p.Replace("'", "").Substring(0, 5);
 
-                    t += haftaAl(nwk);
+                    tt += haftaAl(nwk);
 
                 }
 
@@ -43,7 +43,7 @@ namespace maclar_consol
 
             StreamWriter sw = new StreamWriter(@"..\" + h.ToString() + ".txt", false);
 
-            sw.Write(t);
+            sw.Write(tt);
             sw.Close();
 
         }
@@ -171,7 +171,7 @@ namespace maclar_consol
             }
 
         }
-    
+
     
     }
 }
