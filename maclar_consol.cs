@@ -11,6 +11,7 @@ namespace maclar_consol
     class Program
     {
        
+                      string t = "";
             string h = getCurrentWeek();
             string g = DateTime.Now.ToString("dd.MM.yyyy");
 
@@ -31,42 +32,50 @@ namespace maclar_consol
                 if (p.Length == 38 && p.Replace("'", "").Substring(0, 1) == "1")
                 {
                     string nwk = p.Replace("'", "").Substring(0, 5);
-                    haftaAl(nwk);
-                    Console.WriteLine(p);
+
+                    t += haftaAl(nwk);
+
                 }
 
-                  
-            }
-
-  
-
-                 
-        }
-        public static  void haftaAl(string h) {
-            string t = "";
-
-            string u = "http://www.mackolik.com/AjaxHandlers/ProgramDataHandler.ashx?type=6&sortValue=DATE&week=" + h.ToString() + "&day=-1&sort=-1&sortDir=1&groupId=-1&np=0&sport=1";
-           
-
-            string data = dwnload(u);
-            data = rep(data);
-            string[] d = data.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
-
-            foreach (string p in d)
-            {
-                string pl = Regex.Replace(p, @"/\{(.*?)\}/", " ");
-
-                t += pl + Environment.NewLine;
 
             }
+
 
             StreamWriter sw = new StreamWriter(@"..\" + h.ToString() + ".txt", false);
 
             sw.Write(t);
             sw.Close();
+
+        }
+        public static string haftaAl(string h)
+        {
+            string t = "";
+
+            string u = "http://www.mackolik.com/AjaxHandlers/ProgramDataHandler.ashx?type=6&sortValue=DATE&week=" + h.ToString() + "&day=-1&sort=-1&sortDir=1&groupId=-1&np=0&sport=1";
+
+
+            string data = dwnload(u);
+            data = rep(data);
+            data = data.Replace("{}", "{içi}");
+            string[] d = data.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
+
+            foreach (string p in d)
+            {
+                if (p.Length > 50)
+                {
+                    //                string pl = Regex.Replace(p, @"/\{(.*?)\}/", " ");
+
+                    string degis = vericek(p, "{", "}");
+                    string pl = p.Replace(degis, "-");
+
+                    t += pl + Environment.NewLine;
+                }
+            }
+
+            return t;
         }
 
-        public static bool IsNumeric( string s)
+        public static bool IsNumeric(string s)
         {
             float output;
             return float.TryParse(s, out output);
@@ -99,7 +108,7 @@ namespace maclar_consol
             wc.Headers.Add("Accept-Encoding: identity");
             wc.Headers.Add("Accept-Language: tr-TR");
             wc.Headers.Add("Accept-Language: tr-TR,tr;q=0.8");
-               wc.Headers.Add("Referer", "http://www.mackolik.com/");
+            wc.Headers.Add("Referer", "http://www.mackolik.com/");
             wc.Encoding = Encoding.UTF8;
             try
             {
@@ -162,8 +171,6 @@ namespace maclar_consol
             }
 
         }
-
-
     
     
     }
